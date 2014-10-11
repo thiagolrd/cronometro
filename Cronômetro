@@ -1,0 +1,90 @@
+#!/usr/bin/python
+# coding: latin-1
+
+
+from Tkinter import *
+import time
+import tkFont
+
+class StopWatch(Frame):  
+    """ widget cronometro. """                                                                
+    def __init__(self, parent=None, **kw):        
+        Frame.__init__(self, parent, kw)
+        self._start = 0.0        
+        self._elapsedtime = 0.0
+        self._running = 0
+        self.timestr = StringVar()
+        #self.lapstr = StringVar()
+        self.e = 0
+        self.m = 0
+        self.makeWidgets()
+        self.laps = []
+        self.lapmod2 = 0
+        self.today = time.strftime("%d %b %Y %H-%M-%S", time.localtime())
+        
+
+    def makeWidgets(self):                         
+        
+        l = Label(self, textvariable=self.timestr)
+        self._setTime(self._elapsedtime)
+        l.pack(fill=X, expand=NO, pady=3, padx=2)
+        font = tkFont.Font(family="Arial",size=10,weight="bold")
+        l.config(font=font)
+        
+           
+    def _update(self): 
+        """ Atualiza o rotulo com o tempo transcorrido. """
+        self._elapsedtime = time.time() - self._start
+        self._setTime(self._elapsedtime)
+        self._timer = self.after(50, self._update)
+    
+    def _setTime(self, elap):
+        """ Configura o tempo para minutos e segundos """
+        minutes = int(elap/60)
+        seconds = int(elap - minutes*60.0)
+        hseconds = int((elap - minutes*60.0 - seconds)*100)                
+        self.timestr.set('%02d:%02d' % (minutes, seconds))
+        
+    def _setLapTime(self, elap):
+        """ Configura o tempo para minutos e segundos """
+        minutes = int(elap/60)
+        seconds = int(elap - minutes*60.0)
+        hseconds = int((elap - minutes*60.0 - seconds)*100)
+        return '%02d:%02d:%02d' % (minutes, seconds, hseconds)
+                
+    def Start(self):                                                     
+        """ Inicia o cronometro e ignora se estiver em execução """
+        if not self._running:            
+            self._start = time.time() - self._elapsedtime
+            self._update()
+            self._running = 1        
+    
+        
+    def Reset(self):                                  
+        """ Reinicia o cronometro """
+        if self._running:
+            self.after_cancel(self._timer)
+            self._elapsedtime = time.time() - self._start
+            self._setTime(self._elapsedtime)
+            self._running = 0
+            self._start = time.time()         
+            self._elapsedtime = 0.0
+            self.laps = []   
+            self._setTime(self._elapsedtime)
+
+         
+                
+def main():
+    root = Tk()
+    root.wm_attributes("-topmost", 1)      
+    sw = StopWatch(root)
+    sw.pack(side=LEFT)
+
+    Button(root, text='Iniciar', command=sw.Start, fg="black", width=2, height=1, font="Arial, 8").pack({"side":"left"})
+    Button(root, text='Zerar', command=sw.Reset, fg="black", width=2, height=1, font="Arial, 8").pack({"side":"left"})
+    
+    
+    root.mainloop()
+
+if __name__ == '__main__':
+    main()
